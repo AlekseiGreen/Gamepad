@@ -3,6 +3,8 @@ import * as THREE from "three";
 
 let speedX = 0.6;
 let speedY = 0;
+let positionX = 0.0;
+let positionY = 0.0;
 
 let speed = document.querySelector('.speed');
 
@@ -48,6 +50,28 @@ function gameLoop() {
         console.log("B6=");
         speedY -= 0.001;
     }
+    if(gamepad.buttons[9].value === 1){
+        console.log("B9=");
+        speedY = 0.0;
+        positionX = 0.0;
+        positionY = 0.0;
+    }
+    if(gamepad.buttons[1].value === 1){
+      console.log("B1=");
+      positionX += 0.001;
+    }
+    if(gamepad.buttons[3].value === 1){
+      console.log("B3=");
+      positionX -= 0.001;
+    }
+    if(gamepad.buttons[4].value === 1){
+      console.log("B4=");
+      positionY += 0.001;
+    }
+    if(gamepad.buttons[0].value === 1){
+      console.log("B4=");
+      positionY -= 0.001;
+    }
   }
   speed.innerHTML = `<div>${speedY}</div>`;
   requestAnimationFrame(gameLoop);
@@ -76,10 +100,10 @@ const cube = new THREE.Mesh(geometry, material);
 scene.add(cube);
 camera.position.z = 6;
 
-var geometry2 = new THREE.SphereGeometry(1, 1, 1);
-var material2 = new THREE.MeshNormalMaterial();
-var sphere = new THREE.Mesh( geometry2, material2 );
-scene.add( sphere );
+// var geometry2 = new THREE.SphereGeometry(1, 1, 1);
+// var material2 = new THREE.MeshNormalMaterial();
+// var sphere = new THREE.Mesh( geometry2, material2 );
+// scene.add( sphere );
 camera.position.z = 9;
 
 
@@ -90,6 +114,12 @@ function animate(){
     requestAnimationFrame(animate);
     cube.rotation.x = speedX;
     cube.rotation.y += speedY;
+    cube.position.x += positionX;
+    cube.position.y += positionY;
+
+    positionY
+
+    positionX
     renderer.render(scene, camera);
 }
 
