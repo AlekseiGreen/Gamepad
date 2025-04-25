@@ -8,11 +8,8 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "devDependencies": {
-    
-  },
   "dependencies": {
-    "three": "^0.169.0",
+    "three": "^0.176.0",
     "vite": "^5.4.8"
   }
 }
