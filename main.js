@@ -3,8 +3,6 @@ import  Stats  from 'three/examples/jsm/libs/stats.module';
 
 // Control
 let controllerIndex = null;
-let leftStick_LR = 0;
-let leftStick_UD = 0;
 
 let baseRotX = 0.0; // 0.6
 let basePosX = -0.5;
@@ -16,9 +14,8 @@ let positionY = 0.0;
 let positionZ = 0.0;
 
 // DIV
-let stick = document.querySelector('.stick');
-let stickTwo = document.querySelector('.stick-two');
-let statsDiv = document.querySelector('.stats');
+// let stick = document.querySelector('.stick');
+// let stickTwo = document.querySelector('.stick-two');
 
 // Статистика
 const stats = new Stats();
@@ -38,7 +35,7 @@ document.addEventListener('keydown', function(event){
         console.log('Push A');
         rotY -= 0.01;
     }
-    stick.innerHTML = `<div>${rotY}</div>`;
+    // stick.innerHTML = `<div>${rotY}</div>`;
 });
 //######################################
 
@@ -136,10 +133,8 @@ function gameLoop() {
       console.log("Down");
     }
     
-    leftStick_LR = gamepad.axes[0];
-    leftStick_UD = gamepad.axes[1];
-    stick.innerHTML = `<div>Stick Left/Right=${leftStick_LR}</div>`;
-    stickTwo.innerHTML = `<div>Stick Up/Down=${leftStick_UD}</div>`;
+    // stick.innerHTML = `<div>Stick Left/Right=${gamepad.axes[0]}</div>`;
+    // stickTwo.innerHTML = `<div>Stick Up/Down=${gamepad.axes[1]}</div>`;
   }
   requestAnimationFrame(gameLoop);
 }
@@ -147,36 +142,33 @@ function gameLoop() {
 gameLoop();
 
 // Three.js
-function main() {
-  globalThis.scene = new THREE.Scene();
+
+  const scene = new THREE.Scene();
   const fov = 75;   // угол зрения или FOV, в нашем случае это стандартный угол 75;
   const aspect = window.innerWidth / window.innerHeight; // второй параметр — соотношение сторон или aspect ratio;
   const near = 0.1; // третьим и четвертым параметром идут минимальное и максимальное расстояние от камеры, которое попадет в рендеринг.
-  const far = 1000;    // третьим и четвертым параметром идут минимальное и максимальное расстояние от камеры, которое попадет в рендеринг.
-  globalThis.camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+  const far = 30;   // третьим и четвертым параметром идут минимальное и максимальное расстояние от камеры, которое попадет в рендеринг.
+  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
   
   camera.position.set(0, 4, 6); // позиция камеры
   camera.lookAt(0, 0, 0); // поворот камеры
   
-  const container = document.querySelector(".three-container");
-  globalThis.renderer = new THREE.WebGLRenderer({ antialias: true, container }); // сначала создали объект рендера
+  const canvas = document.querySelector("#three-canvas");
+  const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas }); // сначала создали объект рендера
   renderer.setSize(window.innerWidth, window.innerHeight); // затем установили его размер в соответствии с размером видимой области
-  container.appendChild(renderer.domElement); //
-  if(displayStats) container.appendChild(stats.dom);
+  if(displayStats) canvas.appendChild(stats.dom);
   
-  const geometry_cube = new THREE.BoxGeometry(1, 1, 1); // width: ширина куба, размер сторон по оси X height: высота куба, т.е. размер сторон по оси Y depth: глубина куба, т.е. размер сторон по оси Z
-  const material_cube = new THREE.MeshPhongMaterial({
-      color: 0x0000FF,
-  });
-  globalThis.cube = new THREE.Mesh(geometry_cube, material_cube);
-  scene.add(cube);
-  
-  const geometry_base = new THREE.BoxGeometry(16,0.0001,16); // x y z
-  const material_base = new THREE.MeshPhongMaterial({
-    color: 0x009900,
-  });
-  globalThis.base = new THREE.Mesh(geometry_base, material_base);
-  scene.add(base);
+  function createFig(in_lX=1, in_lY=1, in_lZ=1, in_color){
+    const geometry_cube = new THREE.BoxGeometry(in_lX, in_lY, in_lZ); // width: ширина куба, размер сторон по оси X height: высота куба, т.е. размер сторон по оси Y depth: глубина куба, т.е. размер сторон по оси Z
+    const material_cube = new THREE.MeshPhongMaterial({
+        color: in_color,
+    });
+    const form = new THREE.Mesh(geometry_cube, material_cube);
+    scene.add(form);
+    return form;
+  }
+  const cube = createFig(1, 1, 1, 0x0000FF);
+  const base = createFig(16, 0.0001, 16, 0x009900);
 
   {
     const color = 0xFFFFFF;
@@ -186,8 +178,8 @@ function main() {
     scene.add(light);
   }
 
-}
-main();
+
+
 
 
 function animate(){
