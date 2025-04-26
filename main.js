@@ -143,44 +143,73 @@ gameLoop();
 
 // Three.js
 
-  const scene = new THREE.Scene();
-  const fov = 75;   // угол зрения или FOV, в нашем случае это стандартный угол 75;
-  const aspect = window.innerWidth / window.innerHeight; // второй параметр — соотношение сторон или aspect ratio;
-  const near = 0.1; // третьим и четвертым параметром идут минимальное и максимальное расстояние от камеры, которое попадет в рендеринг.
-  const far = 30;   // третьим и четвертым параметром идут минимальное и максимальное расстояние от камеры, которое попадет в рендеринг.
-  const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-  
-  camera.position.set(0, 4, 6); // позиция камеры
-  camera.lookAt(0, 0, 0); // поворот камеры
-  
-  const canvas = document.querySelector("#three-canvas");
-  const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas }); // сначала создали объект рендера
-  renderer.setSize(window.innerWidth, window.innerHeight); // затем установили его размер в соответствии с размером видимой области
-  if(displayStats) canvas.appendChild(stats.dom);
-  
-  function createFig(in_lX=1, in_lY=1, in_lZ=1, in_color){
-    const geometry_cube = new THREE.BoxGeometry(in_lX, in_lY, in_lZ); // width: ширина куба, размер сторон по оси X height: высота куба, т.е. размер сторон по оси Y depth: глубина куба, т.е. размер сторон по оси Z
-    const material_cube = new THREE.MeshPhongMaterial({
-        color: in_color,
-    });
-    const form = new THREE.Mesh(geometry_cube, material_cube);
-    scene.add(form);
-    return form;
+const scene = new THREE.Scene();
+const fov = 75;   // угол зрения или FOV, в нашем случае это стандартный угол 75;
+const aspect = window.innerWidth / window.innerHeight; // второй параметр — соотношение сторон или aspect ratio;
+const near = 0.1; // третьим и четвертым параметром идут минимальное и максимальное расстояние от камеры, которое попадет в рендеринг.
+const far = 30;   // третьим и четвертым параметром идут минимальное и максимальное расстояние от камеры, которое попадет в рендеринг.
+const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+
+camera.position.set(0, 4, 6); // позиция камеры
+camera.lookAt(0, 0, 0); // поворот камеры
+
+const canvas = document.querySelector("#three-canvas");
+const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas }); // сначала создали объект рендера
+renderer.setSize(window.innerWidth, window.innerHeight); // затем установили его размер в соответствии с размером видимой области
+if(displayStats) canvas.appendChild(stats.dom);
+
+function createBox( in_edgeBox,
+                    in_color,
+                    in_lengthX=1, in_lengthY=1, in_lengthZ=1,
+                    in_segmentsX=1, in_segmentsY=1, in_segmentsZ=1) {
+  const geometry_form = new THREE.BoxGeometry(in_lengthX, in_lengthY, in_lengthZ, in_segmentsX, in_segmentsY, in_segmentsZ); // width: ширина куба, размер сторон по оси X height: высота куба, т.е. размер сторон по оси Y depth: глубина куба, т.е. размер сторон по оси Z
+  const material_form = new THREE.MeshPhongMaterial({
+      color: in_color,
+  });
+  const form = new THREE.Mesh(geometry_form, material_form);
+  scene.add(form);
+
+  if(in_edgeBox){
+    // Выделение ребер
+    const edges = new THREE.EdgesGeometry(geometry_form);
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+    const wireframe = new THREE.LineSegments(edges, lineMaterial);
+    form.add(wireframe); // Добавляем ребра к мешу
   }
-  const cube = createFig(1, 1, 1, 0x0000FF);
-  const base = createFig(16, 0.0001, 16, 0x009900);
 
-  {
-    const color = 0xFFFFFF;
-    const intensity = 3;
-    const light = new THREE.DirectionalLight(color, intensity);
-    light.position.set(-1, 2, 4);
-    scene.add(light);
+  return form;
+}
+
+function createTetrahedron(in_edgeForm, in_color, in_radius, in_detail){
+  const geometry_form = new THREE.TetrahedronGeometry(in_radius, in_detail);
+  const material_form = new THREE.MeshPhongMaterial({
+    color: in_color,
+  });
+  const form =new THREE.Mesh(geometry_form, material_form);
+  scene.add(form);
+
+  if(in_edgeForm){
+    // Выделение ребер
+    const edges = new THREE.EdgesGeometry(geometry_form);
+    const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff, linewidth: 2 });
+    const wireframe = new THREE.LineSegments(edges, lineMaterial);
+    form.add(wireframe); // Добавляем ребра к мешу
   }
 
+  return form;
+}
 
+const cube = createBox(true, 0x0000FF, 1, 1, 1);
+const base = createBox(false, 0x009900, 16, 0.0001, 16);
+const tetra = createTetrahedron(true, 0xFF0000, 3, 4);
 
-
+{
+  const color = 0xFFFFFF;
+  const intensity = 3;
+  const light = new THREE.DirectionalLight(color, intensity);
+  light.position.set(-1, 2, 4);
+  scene.add(light);
+}
 
 function animate(){
     stats.update(); // Обновляем статистику каждый кадр
@@ -193,6 +222,10 @@ function animate(){
     cube.position.x = positionX;
     cube.position.y = positionY;
     cube.position.z = positionZ;
+
+    tetra.position.x = 0.0;
+    tetra.position.y = 0.0;
+    tetra.position.z = -3.0;
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
