@@ -1,13 +1,19 @@
 import * as THREE from "three";
+import * as RAPIER from '@dimforge/rapier3d';
 import  Stats  from 'three/examples/jsm/libs/stats.module';
 
 // Control
 let controllerIndex = null;
 
-let baseRotX = 0.0; // 0.6
-let basePosX = -0.5;
+// Ground parameters
+let groundRotX = 0.0;
+let groundPosX = 0.0;
+let groundLX = 3;
+let groundLY = 0.0001;
+let groundLZ = 16;
 
-let rotX = 0.0; // 0.6
+// Object parameters
+let rotX = 0.0;
 let rotY = 0.0;
 let positionX = 0.0;
 let positionY = 0.0;
@@ -17,12 +23,12 @@ let positionZ = 0.0;
 // let stick = document.querySelector('.stick');
 // let stickTwo = document.querySelector('.stick-two');
 
-// Статистика
+// Stats
 const stats = new Stats();
 stats.dom.style.left = '0px';
-let displayStats = 1;
+let displayStats = true;
 
-// Прослушивание кнопок клавиатуры
+// Keyboard controls
 document.addEventListener('keydown', function(event){
     console.log('Push', event);
     console.log('PushDown=', event.code);
@@ -37,9 +43,8 @@ document.addEventListener('keydown', function(event){
     }
     // stick.innerHTML = `<div>${rotY}</div>`;
 });
-//######################################
 
-// Статус контроллера подключен
+// Gamepad connection
 window.addEventListener("gamepadconnected", (event) => {
   const gamepad = event.gamepad;
   controllerIndex = gamepad.index;
@@ -47,76 +52,78 @@ window.addEventListener("gamepadconnected", (event) => {
   console.log("connected");
 });
 
-// Статус контроллера отключен
+// Gamepad disconnection
 window.addEventListener("gamepaddisconnected", () => {
   controllerIndex = null;
   console.log("disconnected");
 });
 
-// Прослушивание кнопок контроллера
+// Gamepad controls
 function gameLoop() {
   
   if (controllerIndex !== null) {
     let gamepad = navigator.getGamepads()[controllerIndex];
+    const velocity = new RAPIER.Vector3(0, -6, 0);
+    
 
     // Button
-    if(gamepad.buttons[15].value === 1){
+    if(gamepad.buttons[15]?.pressed){
       console.log("15");
     }
-    if(gamepad.buttons[14].value === 1){
+    if(gamepad.buttons[14]?.pressed){
       console.log("14");
     }
-    if(gamepad.buttons[13].value === 1){
+    if(gamepad.buttons[13]?.pressed){
       console.log("13");
     }
-    if(gamepad.buttons[12].value === 1){
+    if(gamepad.buttons[12]?.pressed){
       console.log("MainLight");
     }
-    if(gamepad.buttons[11].value === 1){
+    if(gamepad.buttons[11]?.pressed){
       console.log("+");
     }
-    if(gamepad.buttons[10].value === 1){
+    if(gamepad.buttons[10]?.pressed){
       console.log("-");
     }
-    if(gamepad.buttons[9].value === 1){
+    if(gamepad.buttons[9]?.pressed){
         console.log("RT");
         rotY = 0.0;
         positionX = 0.0;
         positionY = 0.0;
         positionZ = 0.0;
     }
-    if(gamepad.buttons[8].value === 1){
+    if(gamepad.buttons[8]?.pressed){
       console.log("LT");
     }
-    if(gamepad.buttons[7].value === 1){
+    if(gamepad.buttons[7]?.pressed){
       console.log("RB");
       rotY += 0.05;
     }
-    if(gamepad.buttons[6].value === 1){
+    if(gamepad.buttons[6]?.pressed){
       console.log("LB");
       rotY -= 0.05;
     }
-    if(gamepad.buttons[5].value === 1){
+    if(gamepad.buttons[5]?.pressed){
       console.log("P2");
     }
-    if(gamepad.buttons[4].value === 1){
+    if(gamepad.buttons[4]?.pressed){
       console.log("Y");
-      positionZ -= 0.05;
+      velocity.z = -5;
     }
-    if(gamepad.buttons[3].value === 1){
+    if(gamepad.buttons[3]?.pressed){
       console.log("X");
-      positionX -= 0.05;
+      velocity.x = -5;
     }
-    if(gamepad.buttons[2].value === 1){
+    if(gamepad.buttons[2]?.pressed){
       console.log("P1");
     }
-    if(gamepad.buttons[1].value === 1){
+    if(gamepad.buttons[1]?.pressed){
       console.log("B");
-      positionX += 0.05;
+      velocity.x = 5;
     }
-    if(gamepad.buttons[0].value === 1){
+    if(gamepad.buttons[0]?.pressed){
       console.log("A");
-      positionZ += 0.05;
+      velocity.z = 5;
     }
 
     // Axis
@@ -135,14 +142,20 @@ function gameLoop() {
     
     // stick.innerHTML = `<div>Stick Left/Right=${gamepad.axes[0]}</div>`;
     // stickTwo.innerHTML = `<div>Stick Up/Down=${gamepad.axes[1]}</div>`;
+    
+    cube.formRigidBody.setLinvel(velocity, true);
+    
   }
   requestAnimationFrame(gameLoop);
 }
 
 gameLoop();
 
-// Three.js
+// Rapier physics
+const gravity = {x: 0.0, y: -16.0, z: 0.0};
+const world = new RAPIER.World(gravity);
 
+// Three.js setup
 const scene = new THREE.Scene();
 const fov = 75;   // угол зрения или FOV, в нашем случае это стандартный угол 75;
 const aspect = window.innerWidth / window.innerHeight; // второй параметр — соотношение сторон или aspect ratio;
@@ -177,7 +190,13 @@ function createBox( in_edgeBox,
     form.add(wireframe); // Добавляем ребра к мешу
   }
 
-  return form;
+  // Физическое тело куба (Rapier)
+  const formRigidBodyDesc = RAPIER.RigidBodyDesc.dynamic().setTranslation(0, 9, 0);
+  const formRigidBody = world.createRigidBody(formRigidBodyDesc);
+  const formColliderDesc = RAPIER.ColliderDesc.cuboid(1, 1, 1);
+  world.createCollider(formColliderDesc, formRigidBody);
+
+  return {form, formRigidBody};
 }
 
 function createTetrahedron(in_edgeForm, in_color, in_radius, in_detail){
@@ -200,32 +219,38 @@ function createTetrahedron(in_edgeForm, in_color, in_radius, in_detail){
 }
 
 const cube = createBox(true, 0x0000FF, 1, 1, 1);
-const base = createBox(false, 0x009900, 16, 0.0001, 16);
-const tetra = createTetrahedron(true, 0xFF0000, 3, 4);
 
-{
-  const color = 0xFFFFFF;
-  const intensity = 3;
-  const light = new THREE.DirectionalLight(color, intensity);
-  light.position.set(-1, 2, 4);
-  scene.add(light);
-}
+const tetra = createTetrahedron(true, 0xFF0000, 3, 1);
+
+const ground = createBox(false, 0x009900, groundLX, groundLY, groundLZ);
+// Физическое представление пола (Rapier)
+const groundColliderDesc = RAPIER.ColliderDesc.cuboid(groundLX/2, groundLY, groundLZ/2);
+world.createCollider(groundColliderDesc);
+
+// light
+const color = 0xFFFFFF;
+const intensity = 3;
+const light = new THREE.DirectionalLight(color, intensity);
+light.position.set(-1, 2, 4);
+scene.add(light);
 
 function animate(){
     stats.update(); // Обновляем статистику каждый кадр
+    world.step();   // Обновляем физику (60 FPS)
 
-    base.rotation.x = baseRotX;
-    base.position.y = basePosX;
+    ground.form.rotation.x = groundRotX;
+    ground.form.position.y = groundPosX;
 
-    cube.rotation.x = rotX;
-    cube.rotation.y = rotY;
-    cube.position.x = positionX;
-    cube.position.y = positionY;
-    cube.position.z = positionZ;
+    // cube.form.rotation.x = rotX;
+    // cube.form.rotation.y = rotY;
+
+    // Синхронизация с Three.js
+    const pos = cube.formRigidBody.translation();
+    cube.form.position.copy(pos);
 
     tetra.position.x = 0.0;
     tetra.position.y = 0.0;
-    tetra.position.z = -3.0;
+    tetra.position.z = -6.0;
 
     renderer.render(scene, camera);
     requestAnimationFrame(animate);
