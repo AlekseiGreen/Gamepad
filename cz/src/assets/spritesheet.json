@@ -1,0 +1,73 @@
+{
+    "textures": [
+        {
+            "image": "spritesheet.png",  
+            "format": "RGBA8888",
+            "size": { "w": 512, "h": 512 },  
+            "scale": 1,
+            "frames": [
+                {
+                    "filename": "frStop_1",
+                    "frame": { "x": 5, "y": 10, "w": 53, "h": 68 },
+                    "rotated": false,
+                    "trimmed": false,
+                    "spriteSourceSize": { "x": 0, "y": 0, "w": 32, "h": 32 },
+                    "sourceSize": { "w": 32, "h": 32 }
+                },
+                {
+                    "filename": "frRun_1",  
+                    "frame": { "x": 5, "y": 387, "w": 47, "h": 68 }
+                },
+                {
+                    "filename": "frRun_2",  
+                    "frame": { "x": 63, "y": 387, "w": 38, "h": 68 }
+                },
+                {
+                    "filename": "frRun_3",  
+                    "frame": { "x": 113, "y": 384, "w": 44, "h": 71 }
+                },
+                {
+                    "filename": "frRun_4",  
+                    "frame": { "x": 168, "y": 383, "w": 52, "h": 72 }
+                },
+                {
+                    "filename": "frRun_5",  
+                    "frame": { "x": 237, "y": 382, "w": 58, "h": 73 }
+                },
+                {
+                    "filename": "frRun_6",  
+                    "frame": { "x": 312, "y": 385, "w": 53, "h": 70 }
+                },
+                {
+                    "filename": "frRun_7",  
+                    "frame": { "x": 379, "y": 382, "w": 44, "h": 73 }
+                },
+                {
+                    "filename": "frRun_8",  
+                    "frame": { "x": 442, "y": 383, "w": 42, "h": 72 }
+                },
+                {
+                    "filename": "frRun_9",  
+                    "frame": { "x": 499, "y": 379, "w": 59, "h": 76 }
+                },
+                {
+                    "filename": "frRun_10",  
+                    "frame": { "x": 570, "y": 382, "w": 65, "h": 67 }
+                },
+                {
+                    "filename": "frSitDown_1",  
+                    "frame": { "x": 5, "y": 641, "w": 51, "h": 55 }
+                },
+                {
+                    "filename": "frSitDown_2",
+                    "frame": { "x": 74, "y": 651, "w": 51, "h": 45 }
+                }
+            ]
+        }
+    ],
+    "meta": {
+        "app": "Phaser Asset Packer",
+        "version": "1.0",
+        "smartupdate": "$TexturePacker:SmartUpdate:hash..."
+    }
+}
