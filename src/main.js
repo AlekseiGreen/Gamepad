@@ -34,6 +34,7 @@ let keyD;
 let keyW;
 let keyS;
 let speedRun = 12;
+let isCrouching = false;
 
 function preload() {
     this.load.image('sky', '/src/assets/space3.png');
@@ -59,7 +60,7 @@ function create() {
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
     
-    // Анимация влево (используем кадры 37-40)
+    // Анимация влево
     this.anims.create({
         key: 'left',
         frames: [
@@ -78,7 +79,7 @@ function create() {
         repeat: -1
     });
     
-    // Анимация стояния (используем кадр 0)
+    // Анимация стояния
     this.anims.create({
         key: 'stop',
         frames: [{ key: 'turnerAtlas', frame: 'frStop_1' }], // Используем кадр из атласа
@@ -86,7 +87,7 @@ function create() {
         repeat: -1
     });
 
-    // Анимация вправо (используем кадры 5, 63, 113)
+    // Анимация вправо
     this.anims.create({
         key: 'right',
         frames: [
@@ -103,6 +104,18 @@ function create() {
         ], 
         frameRate: speedRun,
         repeat: -1
+    });
+
+    // Анимация присесть
+    this.anims.create({
+        key: 'down',
+        frames: [
+            { key: 'turnerAtlas', frame: 'frSitDown_1' },
+            { key: 'turnerAtlas', frame: 'frSitDown_2' },
+        ], // Используем кадр из атласа
+        frameRate: 10,
+        repeat: 0,
+        holdOnLastFrame: true,
     });
     
     // Звезды
@@ -151,9 +164,20 @@ function update() {
         player.anims.play('right', true);
         player.flipX = false;
     }
+    else if (keyS.isDown || cursors.down.isDown) {
+        player.setVelocityX(0);
+        if (!isCrouching) {
+            player.anims.play('down', true);
+            isCrouching = true;
+        }
+        player.flipX = false;
+    }
     else {
         player.setVelocityX(0);
-        player.anims.play('stop');
+        if (isCrouching) {
+            player.anims.play('stop');
+            isCrouching = false;
+        }
     }
 
     if ((keyW.isDown || cursors.up.isDown) && onGround) {
