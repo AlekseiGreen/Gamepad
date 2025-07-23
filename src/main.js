@@ -29,26 +29,18 @@ let score = 0;
 let scoreText;
 let gameOver = false;
 let canJump = true;
-
 let keyA;
 let keyD;
 let keyW;
 let keyS;
-
+let speedRun = 12;
 
 function preload() {
     this.load.image('sky', '/src/assets/space3.png');
     this.load.image('ground', '/src/assets/platform.png');
     this.load.image('star', '/src/assets/yellow.png');
 
-    //ComixZoneSketchTurner.gif
-    this.load.spritesheet('turner', '/src/assets/SketchTurner.png', {
-        frameWidth: 53,       // ширина одного кадра
-        frameHeight: 80,      // высота одного кадра
-        endFrame: -1,         // -1 означает "использовать все кадры"
-        margin: 0,            // отступ от края изображения
-        spacing: 0            // расстояние между кадрами
-    });
+    this.load.multiatlas('turnerAtlas', '/src/assets/spritesheet.json', '/src/assets');
 }
 
 function create() {
@@ -57,50 +49,59 @@ function create() {
     
     // Платформы
     platforms = this.physics.add.staticGroup();
-    
-    // Основание
     platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-    
-    // Другие платформы
     platforms.create(600, 400, 'ground');
     platforms.create(50, 250, 'ground');
     platforms.create(750, 220, 'ground');
     
     // Игрок
-    player = this.physics.add.sprite(0, 450, 'turner');
+    player = this.physics.add.sprite(0, 450, 'turnerAtlas', 'frame1');
     player.setBounce(0.2);
     player.setCollideWorldBounds(true);
     
-    // Анимации
+    // Анимация влево (используем кадры 37-40)
     this.anims.create({
         key: 'left',
-        frames: this.anims.generateFrameNumbers('turner', { start: 37, end: 40 }),
-        frameRate: 10,
+        frames: [
+            { key: 'turnerAtlas', frame: 'frRun_1' },   // Используем кадр из атласа
+            { key: 'turnerAtlas', frame: 'frRun_2' },
+            { key: 'turnerAtlas', frame: 'frRun_3' },
+            { key: 'turnerAtlas', frame: 'frRun_4' },
+            { key: 'turnerAtlas', frame: 'frRun_5' },
+            { key: 'turnerAtlas', frame: 'frRun_6' },
+            { key: 'turnerAtlas', frame: 'frRun_7' },
+            { key: 'turnerAtlas', frame: 'frRun_8' },
+            { key: 'turnerAtlas', frame: 'frRun_9' },
+            { key: 'turnerAtlas', frame: 'frRun_10' },
+        ], 
+        frameRate: speedRun,
         repeat: -1
     });
     
+    // Анимация стояния (используем кадр 0)
     this.anims.create({
         key: 'stop',
-        frames: [ { key: 'turner', frame: { x: 5, y: 641, width: 51, height: 55 }  },
-                  //{ key: 'turner', frame: this.addFrame('turner', 5, 387, 47, 68) },
-                  //{ key: 'turner', frame: { x: 80, y: 7, width: 51, height: 71 }  },
-                  //{ key: 'turner', frame: { x: 145, y: 6, width: 52, height: 72 }  },
-        ],
-        frameRate: 8,
+        frames: [{ key: 'turnerAtlas', frame: 'frStop_1' }], // Используем кадр из атласа
+        frameRate: 10,
         repeat: -1
     });
 
+    // Анимация вправо (используем кадры 5, 63, 113)
     this.anims.create({
         key: 'right',
-        frames: [ { key: 'turner', frame: { x: 5, y: 387, width: 47, height: 68 }  },
-                  //{ key: 'turner', frame: { x: 63, y: 387, width: 38, height: 68 }  },
-                  //{ key: 'turner', frame: { x: 113, y: 384, width: 44, height: 71 }  },
-                  // { key: 'turner', frame: this.addFrame('turner', 5, 387, 47, 68) },
-                  // { key: 'turner', frame: this.addFrame('turner', 63, 387, 38, 68) },
-                  // { key: 'turner', frame: this.addFrame('turner', 113, 384, 44, 71) },
-                  
-        ],
-        frameRate: 10,
+        frames: [
+            { key: 'turnerAtlas', frame: 'frRun_1' },   // Используем кадр из атласа
+            { key: 'turnerAtlas', frame: 'frRun_2' },
+            { key: 'turnerAtlas', frame: 'frRun_3' },
+            { key: 'turnerAtlas', frame: 'frRun_4' },
+            { key: 'turnerAtlas', frame: 'frRun_5' },
+            { key: 'turnerAtlas', frame: 'frRun_6' },
+            { key: 'turnerAtlas', frame: 'frRun_7' },
+            { key: 'turnerAtlas', frame: 'frRun_8' },
+            { key: 'turnerAtlas', frame: 'frRun_9' },
+            { key: 'turnerAtlas', frame: 'frRun_10' },
+        ], 
+        frameRate: speedRun,
         repeat: -1
     });
     
@@ -118,12 +119,7 @@ function create() {
     // Коллизии
     this.physics.add.collider(player, platforms);
     this.physics.add.collider(stars, platforms);
-    
-    // Событие при столкновении с платформой
-    player.body.onWorldBounds = true;
-    
-    // Сбор звезд
-    //this.physics.add.overlap(player, stars, collectStar, null, this);
+    this.physics.add.overlap(player, stars, collectStar, null, this);
     
     // Управление
     cursors = this.input.keyboard.createCursorKeys();
@@ -141,52 +137,42 @@ function create() {
 }
 
 function update() {
-    if (gameOver) {
-        return;
-    }
+    if (gameOver) return;
     
-    // Проверка, стоит ли игрок на платформе
     const onGround = player.body.blocked.down || player.body.touching.down;
     
     if (keyA.isDown || cursors.left.isDown) {
         player.setVelocityX(-160);
         player.anims.play('left', true);
+        player.flipX = true; // Отражаем спрайт если нужно
     }
     else if (keyD.isDown || cursors.right.isDown) {
         player.setVelocityX(160);
         player.anims.play('right', true);
+        player.flipX = false;
     }
     else {
         player.setVelocityX(0);
         player.anims.play('stop');
     }
 
-    
-    
-    // Прыжок только если игрок на земле
-    if ( (keyW.isDown || cursors.up.isDown) && onGround) {
+    if ((keyW.isDown || cursors.up.isDown) && onGround) {
         player.setVelocityY(-230);
     }
 }
 
 function collectStar(player, star) {
     star.disableBody(true, true);
-    
     score += 10;
     scoreText.setText('Счет: ' + score);
     
-    // Если собраны все звезды
     if (stars.countActive(true) === 0) {
-        // Пересоздаем звезды
         stars.children.iterate(function (child) {
             child.enableBody(true, child.x, 0, true, true);
         });
         
-        // Телепортируем игрока в случайное место
         const x = Phaser.Math.Between(100, 700);
         player.setPosition(x, 0);
-        
-        // Добавляем 100 очков за полный сбор
         score += 100;
         scoreText.setText('Счет: ' + score);
     }
