@@ -67,55 +67,58 @@ function gameLoop() {
     
 
     // Button
+    if(gamepad.buttons[16]?.pressed){
+      console.log("x_LIGHT=16");
+    }
     if(gamepad.buttons[15]?.pressed){
-      console.log("15");
+      console.log("right=15");
     }
     if(gamepad.buttons[14]?.pressed){
-      console.log("14");
+      console.log("left=14");
     }
     if(gamepad.buttons[13]?.pressed){
-      console.log("13");
+      console.log("down=13");
     }
     if(gamepad.buttons[12]?.pressed){
-      console.log("MainLight");
+      console.log("up=12");
     }
     if(gamepad.buttons[11]?.pressed){
-      console.log("+");
+      console.log("R3=10");
     }
     if(gamepad.buttons[10]?.pressed){
-      console.log("-");
+      console.log("L3=10");
     }
     if(gamepad.buttons[9]?.pressed){
-        console.log("RT");
+        console.log("START");
         rotY = 0.0;
         positionX = 0.0;
         positionY = 0.0;
         positionZ = 0.0;
     }
     if(gamepad.buttons[8]?.pressed){
-      console.log("LT");
+      console.log("SELECT");
     }
     if(gamepad.buttons[7]?.pressed){
-      console.log("RB");
+      console.log("R2");
       rotY += 0.05;
     }
     if(gamepad.buttons[6]?.pressed){
-      console.log("LB");
+      console.log("L2");
       rotY -= 0.05;
     }
     if(gamepad.buttons[5]?.pressed){
-      console.log("P2");
+      console.log("R1");
     }
     if(gamepad.buttons[4]?.pressed){
-      console.log("Y");
+      console.log("L1");
       velocity.z = -5;
     }
     if(gamepad.buttons[3]?.pressed){
-      console.log("X");
+      console.log("Y");
       velocity.x = -5;
     }
     if(gamepad.buttons[2]?.pressed){
-      console.log("P1");
+      console.log("X");
     }
     if(gamepad.buttons[1]?.pressed){
       console.log("B");
