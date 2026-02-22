@@ -5,6 +5,15 @@ import  Stats  from 'three/examples/jsm/libs/stats.module';
 // Control
 let controllerIndex = null;
 
+// позиция камеры
+let posCam_X = 0;
+let posCam_Y = 4;
+let posCam_Z = 6;
+let lookAt_X = 0;
+let lookAt_Y = 0;
+let lookAt_Z = 0;
+
+
 // Ground parameters
 let groundRotX = 0.0;
 let groundPosX = 0.0;
@@ -58,6 +67,8 @@ window.addEventListener("gamepaddisconnected", () => {
   console.log("disconnected");
 });
 
+
+
 // Gamepad controls
 function gameLoop() {
   
@@ -72,15 +83,19 @@ function gameLoop() {
     }
     if(gamepad.buttons[15]?.pressed){
       console.log("right=15");
+      posCam_X += 0.1;
     }
     if(gamepad.buttons[14]?.pressed){
       console.log("left=14");
+      posCam_X -= 0.1;
     }
     if(gamepad.buttons[13]?.pressed){
       console.log("down=13");
+      posCam_Y -= 0.1;
     }
     if(gamepad.buttons[12]?.pressed){
       console.log("up=12");
+      posCam_Y += 0.1;
     }
     if(gamepad.buttons[11]?.pressed){
       console.log("R3=10");
@@ -115,10 +130,11 @@ function gameLoop() {
     }
     if(gamepad.buttons[3]?.pressed){
       console.log("Y");
-      velocity.x = -5;
+      velocity.z = -5;
     }
     if(gamepad.buttons[2]?.pressed){
       console.log("X");
+      velocity.x = -5;
     }
     if(gamepad.buttons[1]?.pressed){
       console.log("B");
@@ -130,22 +146,29 @@ function gameLoop() {
     }
 
     // Axis
-    if(gamepad.axes[9] === -1.0){
+    if(gamepad.axes[1] <= -0.2){
       console.log("Up");
+      camera.rotation.x += 0.006;
     }
-    if(gamepad.axes[9] === 0.7142857313156128 ){
+    if(gamepad.axes[0] <= -0.2 ){
       console.log("Left");
+      camera.rotation.y += 0.006;
     }
-    if(gamepad.axes[9] === -0.4285714030265808 ){
+    if(gamepad.axes[0] >= 0.2 ){
       console.log("Right");
+      camera.rotation.y -= 0.006;
     }
-    if(gamepad.axes[9] === 0.14285719394683838 ){
+    if(gamepad.axes[1] >= 0.2 ){
       console.log("Down");
+      camera.rotation.x -= 0.006;
     }
     
     // stick.innerHTML = `<div>Stick Left/Right=${gamepad.axes[0]}</div>`;
     // stickTwo.innerHTML = `<div>Stick Up/Down=${gamepad.axes[1]}</div>`;
     
+    
+    camera.position.set(posCam_X, posCam_Y, posCam_Z); // позиция камеры
+
     cube.formRigidBody.setLinvel(velocity, true);
     
   }
@@ -166,8 +189,9 @@ const near = 0.1; // третьим и четвертым параметром �
 const far = 30;   // третьим и четвертым параметром идут минимальное и максимальное расстояние от камеры, которое попадет в рендеринг.
 const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
 
-camera.position.set(0, 4, 6); // позиция камеры
-camera.lookAt(0, 0, 0); // поворот камеры
+camera.position.set(posCam_X, posCam_Y, posCam_Z); // позиция камеры
+//camera.rotation.x = 0;
+camera.lookAt(lookAt_X, lookAt_Y, lookAt_Z); // поворот камеры
 
 const canvas = document.querySelector("#three-canvas");
 const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas }); // сначала создали объект рендера
@@ -231,7 +255,7 @@ const groundColliderDesc = RAPIER.ColliderDesc.cuboid(groundLX/2, groundLY, grou
 world.createCollider(groundColliderDesc);
 
 // light
-const color = 0xFFFFFF;
+const color = 0xffffff;
 const intensity = 3;
 const light = new THREE.DirectionalLight(color, intensity);
 light.position.set(-1, 2, 4);
