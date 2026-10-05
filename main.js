@@ -2,6 +2,8 @@ import * as THREE from "three";
 import * as RAPIER from '@dimforge/rapier3d';
 import Stats from 'three/examples/jsm/libs/stats.module';
 
+import { createBox } from "./src/modules/lib.js";
+
 // Индекс подключенного геймпада
 let controllerIndex = null;
 
@@ -48,40 +50,6 @@ const canvas = document.querySelector("#three-canvas");
 const renderer = new THREE.WebGLRenderer({ antialias: true, canvas: canvas });
 renderer.setSize(window.innerWidth, window.innerHeight);
 
-// Функция создания кубических объектов
-function createBox(in_edgeBox, in_color, in_lengthX = 1, in_lengthY = 1, in_lengthZ = 1, isStatic = false, posX = 0, posY = 0, posZ = 0, frictionValue = 0.5) {
-    const geometry_form = new THREE.BoxGeometry(in_lengthX, in_lengthY, in_lengthZ);
-    const material_form = new THREE.MeshPhongMaterial({ color: in_color });
-    const form = new THREE.Mesh(geometry_form, material_form);
-    form.position.set(posX, posY, posZ);
-    scene.add(form);
-
-    if (in_edgeBox) {
-        const edges = new THREE.EdgesGeometry(geometry_form);
-        const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-        const wireframe = new THREE.LineSegments(edges, lineMaterial);
-        form.add(wireframe);
-    }
-
-    let formRigidBodyDesc = isStatic ? RAPIER.RigidBodyDesc.fixed() : RAPIER.RigidBodyDesc.dynamic();
-    formRigidBodyDesc.setTranslation(posX, posY, posZ);
-    
-    if (!isStatic) {
-        formRigidBodyDesc.setLinearDamping(1.0); 
-        formRigidBodyDesc.setAngularDamping(1.0); 
-    }
-
-    const formRigidBody = world.createRigidBody(formRigidBodyDesc);
-    const formColliderDesc = RAPIER.ColliderDesc.cuboid(in_lengthX / 2, in_lengthY / 2, in_lengthZ / 2);
-    
-    formColliderDesc.setFriction(frictionValue); 
-    formColliderDesc.setRestitution(0.1);       
-    
-    world.createCollider(formColliderDesc, formRigidBody);
-
-    return { form, formRigidBody };
-}
-
 function createTetrahedron(in_edgeForm, in_color, in_radius, in_detail) {
     const geometry_form = new THREE.TetrahedronGeometry(in_radius, in_detail);
     const material_form = new THREE.MeshPhongMaterial({ color: in_color });
@@ -99,15 +67,15 @@ function createTetrahedron(in_edgeForm, in_color, in_radius, in_detail) {
 
 // ================= СОЗДАНИЕ ПЛАТФОРМ И ИГРОКА =================
 const platforms = [];
-const cube = createBox(true, 0x0000FF, 1, 1, 1, false, 0, 5, 0, 0.8); // Чистый куб без дочерних элементов
+const cube = createBox(world, scene, true, 0x0000FF, 1, 1, 1, false, 0, 5, 0, 0.8); // Чистый куб без дочерних элементов
 
 // Создание остального мира
-platforms.push(createBox(false, 0x009900, 6, 0.5, 6, true, 0, 0, 0, 0.8));
-platforms.push(createBox(false, 0x007700, 2, 0.5, 12, true, 0, 0, -9, 0.8));
-platforms.push(createBox(false, 0x005500, 5, 2.0, 5, true, 0, 0.75, -17.5, 0.8));
-platforms.push(createBox(false, 0x007722, 10, 0.5, 2, true, -8, 0, 0, 0.8));
-platforms.push(createBox(false, 0x006633, 3, 0.5, 3, true, -16, 1.5, 0, 0.8));
-platforms.push(createBox(false, 0x227700, 8, 0.5, 4, true, 7, 0, 3, 0.8));
+platforms.push(createBox(world, scene, false, 0x009900, 6, 0.5, 6, true, 0, 0, 0, 0.8));
+platforms.push(createBox(world, scene, false, 0x007700, 2, 0.5, 12, true, 0, 0, -9, 0.8));
+platforms.push(createBox(world, scene, false, 0x005500, 5, 2.0, 5, true, 0, 0.75, -17.5, 0.8));
+platforms.push(createBox(world, scene, false, 0x007722, 10, 0.5, 2, true, -8, 0, 0, 0.8));
+platforms.push(createBox(world, scene, false, 0x006633, 3, 0.5, 3, true, -16, 1.5, 0, 0.8));
+platforms.push(createBox(world, scene, false, 0x227700, 8, 0.5, 4, true, 7, 0, 3, 0.8));
 
 const tetra = createTetrahedron(true, 0xFF0000, 1.5, 1);
 
@@ -124,7 +92,7 @@ const targetCameraPosition = new THREE.Vector3();
 // ГЛАВНЫЙ ЦИКЛ ОБНОВЛЕНИЯ
 function animate() {
     stats.update();
-    world.step(); 
+    world.step();
 
     // Синхронизация позиции и вращения визуала из физики Rapier
     const currentCubePos = cube.formRigidBody.translation();
